@@ -73,27 +73,31 @@ class MultiFastaWindowDataset(Dataset):
         return {"prot_id": prot_name, "position": position + 1, "window": window}
 
 
-# 1. Dataset for Training/Validation (Peptides + Labels)
+# 1. Dataset for Training/Validation/Test (Peptides + Labels)
 class PeptideDataset(Dataset):
-    def __init__(self, file_path):
+    def __init__(self, file_path, seq_col='peptide', label_col='label'):
         self.data = pd.read_csv(file_path)
+        self.seq_col = seq_col
+        self.label_col = label_col
     def __len__(self):
         return len(self.data)
     def __getitem__(self, idx):
-        peptide = self.data.iloc[idx]['peptide']
-        label = self.data.iloc[idx]['label']
-        return peptide, torch.tensor(label, dtype=torch.float32)
+        # integer index to get peptide and label
+        peptide = self.data.iloc[idx][self.seq_col]
+        label = self.data.iloc[idx][self.label_col]
+        return  {"window": peptide, "label": label}
 
 
 # 2. DataModule to handle loading and batching
 class CleavageDataModule(pl.LightningDataModule):
-    def __init__(self, train_file=None, val_file=None, predict_file=None,
-                 batch_size=64, num_workers=4,
-                 upstream=6, downstream=4):
+    def __init__(self, train_file=None, val_file=None, predict_file=None, test_file=None,
+                 batch_size=64, num_workers=4, upstream=6, downstream=4):
         super().__init__()
         self.train_file = train_file
         self.val_file = val_file
+        self.test_file = test_file
         self.predict_file = predict_file
+
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.upstream = upstream
@@ -113,6 +117,9 @@ class CleavageDataModule(pl.LightningDataModule):
                 upstream=self.upstream,
                 downstream=self.downstream
             )
+        if stage == 'test':
+            # Used for trainer.test() if needed
+            self.test_dataset = PeptideDataset(self.test_file)
 
     def train_dataloader(self):
         return DataLoader(self.train_dataset, batch_size=self.batch_size,
