@@ -16,11 +16,11 @@ def run_inference(args):
     """
     Main function to run the inference pipeline based on command-line arguments.
     """
-    print("--- MHC-I Cleavage Site Prediction ---")
-
     # 1. Setup Environment
     torch.set_float32_matmul_precision('medium')
     device = torch.device(args.device if torch.cuda.is_available() else 'cpu')
+
+    print("--- MHC-I Cleavage Site Prediction ---")
     print(f"Using device: {device}")
 
     # 2. Define MLP model architecture (must match the trained model)
@@ -60,7 +60,7 @@ def run_inference(args):
 
     print("Generating embeddings for all windows...")
     # This step can consume a lot of memory for large files
-    seq_embeddings = embedder.encode_esm(window_dataset)
+    seq_embeddings = embedder.encode_esm(window_dataset, batch_size = args.batch_size_emb, num_workers = args.num_workers)
 
     # 5. Create DataLoader and Run Prediction
     embedding_dataset = TensorDataset(seq_embeddings)
@@ -105,7 +105,8 @@ if __name__ == '__main__':
     parser.add_argument("--upstream", type=int, default=6, help="Number of amino acids upstream of the cleavage site (including c-terminal).")
     parser.add_argument("--downstream", type=int, default=4, help="Number of amino acids downstream of the cleavage site.")
 
-    parser.add_argument("--batch_size", type=int, default=18, help="Batch size for prediction.")
+    parser.add_argument("--batch_size", type=int, default=32, help="Batch size for prediction.")
+    parser.add_argument("--batch_size_emb", type=int, default=32, help="Batch size for embedding generation.")
     parser.add_argument("--num_workers", type=int, default=4, help="Number of workers for the DataLoader.")
 
     args = parser.parse_args()
