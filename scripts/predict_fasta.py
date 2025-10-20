@@ -60,7 +60,8 @@ def run_inference(args):
 
     print("Generating embeddings for all windows...")
     # This step can consume a lot of memory for large files
-    seq_embeddings = embedder.encode_esm(window_dataset, batch_size = args.batch_size_emb, num_workers = args.num_workers)
+    seq_embeddings = embedder.encode_esm(window_dataset, emb_type="concat", batch_size = args.batch_size_emb,
+                                         num_workers = args.num_workers)
 
     # 5. Create DataLoader and Run Prediction
     embedding_dataset = TensorDataset(seq_embeddings)

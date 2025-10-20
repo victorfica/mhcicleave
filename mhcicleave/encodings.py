@@ -182,7 +182,7 @@ class Embedder:
             self.featureLen = 21
             self.encode = self.encode_onehot
 
-    def encode_esm(self, sequences, emb_type = None, batch_size = 32, num_workers = 4, dataset_key='window'):
+    def encode_esm(self, sequences, emb_type = 'concat', batch_size = 32, num_workers = 4, dataset_key='window'):
 
         if emb_type not in ["avg", "concat"]:
             print("Computing per-residue embedding by default. Other emb_type = 'avg' or 'concat'")
