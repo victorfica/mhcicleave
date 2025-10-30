@@ -1,5 +1,6 @@
 import torch
 import pandas as pd
+import h5py
 import lightning.pytorch as pl
 from torch.utils.data import Dataset, DataLoader
 from Bio import SeqIO
@@ -86,6 +87,18 @@ class PeptideDataset(Dataset):
         peptide = self.data.iloc[idx][self.seq_col]
         label = self.data.iloc[idx][self.label_col]
         return  {"window": peptide, "label": label}
+
+class PeptideEmbeddings(Dataset):
+    def __init__(self, h5_file):
+        with h5py.File(h5_file, 'r') as f:
+            self.embeddings = f['embeddings'][:]
+            self.labels = f['labels'][:]
+    def __len__(self):
+        return len(self.labels)
+    def __getitem__(self, idx):
+        embedding = self.embeddings[idx]
+        label = self.labels[idx]
+        return embedding, label
 
 
 # 2. DataModule to handle loading and batching
