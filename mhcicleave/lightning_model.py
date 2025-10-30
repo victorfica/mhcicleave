@@ -1,3 +1,5 @@
+from typing import Any
+
 import torch
 import lightning.pytorch as pl
 from torch import nn
@@ -6,6 +8,7 @@ from torch.optim.lr_scheduler import StepLR
 from torchmetrics import AUROC, MatthewsCorrCoef, Accuracy, ConfusionMatrix, ROC
 from torchmetrics import MetricCollection, MetricTracker
 
+pl.seed_everything(42)
 
 class CleavageLightningModule(pl.LightningModule):
     def __init__(self, model, lr=0.001, step_size=3, gamma=0.1):
@@ -20,7 +23,7 @@ class CleavageLightningModule(pl.LightningModule):
         """
 
         super().__init__()
-        self.save_hyperparameters(ignore=['model'])  # guarda hiperparámetros en checkpoint
+        self.save_hyperparameters()  # guarda hiperparámetros en checkpoint
 
         # model and loss func
         self.model = model
@@ -33,12 +36,12 @@ class CleavageLightningModule(pl.LightningModule):
 
         self.train_metrics = metrics.clone(prefix="train_")
         self.valid_metrics = metrics.clone(prefix="valid_")
-        # self.test_metrics = metrics.clone(prefix="test_")
+        self.test_metrics = metrics.clone(prefix="test_")
 
         # Define tracker over the collection to easy keep track of the metrics over multiple epochs
         self.train_tracker = MetricTracker(self.train_metrics)
         self.valid_tracker = MetricTracker(self.valid_metrics)
-        # self.test_tracker = MetricTracker(self.test_metrics)
+        self.test_tracker = MetricTracker(self.test_metrics)
 
     def forward(self, x):
         """
@@ -93,12 +96,19 @@ class CleavageLightningModule(pl.LightningModule):
     def on_validation_epoch_start(self):
         self.valid_tracker.increment()
 
+    def on_test_epoch_start(self):
+        self.test_tracker.increment()
+
     def on_train_epoch_end(self):
         epoch_metrics = self.train_tracker.compute()
         self.log_dict(epoch_metrics, logger=True)
 
     def on_validation_epoch_end(self):
         epoch_metrics = self.valid_tracker.compute()
+        self.log_dict(epoch_metrics, logger=True)
+
+    def on_test_epoch_end(self):
+        epoch_metrics = self.test_tracker.compute()
         self.log_dict(epoch_metrics, logger=True)
 
     def configure_optimizers(self):
@@ -123,16 +133,8 @@ class CleavageLightningModule(pl.LightningModule):
         preds = torch.sigmoid(logits)
         return preds
 
-    # --- (Opcional) Test Step ---
-    # def test_step(self, batch, batch_idx):
-    #     loss, labels, pred_labels = self._shared_step(batch)
-    #     self.test_tracker.update(pred_labels, labels.int())
-    #     self.log("test_loss", loss, on_step=False, on_epoch=True, logger=True)
-    #     return loss
-
-    # def on_test_epoch_start(self):
-    #     self.test_tracker.increment()
-
-    # def on_test_epoch_end(self):
-    #     epoch_metrics = self.test_tracker.compute()
-    #     self.log_dict(epoch_metrics, logger=True)
+    def test_step(self, batch, batch_idx):
+        loss, labels, pred_labels = self._shared_steps(batch)
+        self.valid_tracker.update(pred_labels, labels)
+        self.log("test_loss", loss, on_step=False, on_epoch=True, logger=True)
+        return loss
