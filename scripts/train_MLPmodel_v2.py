@@ -66,7 +66,7 @@ def run_train(args):
     # --- 3. Callbacks y Logger ---
     callbacks = [
         # Guarda el mejor modelo basado en val_loss
-        ModelCheckpoint(monitor="val_loss", mode="min", filename='best_model-{epoch:02d}-{val_loss:.2f}', save_top_k=1,
+        ModelCheckpoint(monitor="val_BinaryAUROC", mode="max", filename='best_model-{epoch:02d}-{val_BinaryAUROC:.3f}', save_top_k=1,
                         verbose=True),
         # Detiene el entrenamiento si val_loss no mejora en 'patience' épocas
         EarlyStopping(monitor="val_loss", mode="min", patience=5, verbose=True)
