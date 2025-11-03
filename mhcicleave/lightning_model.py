@@ -93,7 +93,7 @@ class CleavageLightningModule(pl.LightningModule):
         self.roc(pred_labels, labels)
         self.conf(pred_labels, labels)
 
-        self.valid_tracker.update(pred_labels, labels)
+        self.test_tracker.update(pred_labels, labels)
         self.log("test_loss", loss, on_step=False, on_epoch=True, logger=True)
         return loss
 
