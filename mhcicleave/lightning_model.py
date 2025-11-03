@@ -8,7 +8,7 @@ from torch.optim.lr_scheduler import StepLR
 from torchmetrics import AUROC, MatthewsCorrCoef, Accuracy, ConfusionMatrix, ROC
 from torchmetrics import MetricCollection, MetricTracker
 
-pl.seed_everything(42)
+#pl.seed_everything(42)
 
 class CleavageLightningModule(pl.LightningModule):
     def __init__(self, model, lr=0.001, step_size=3, gamma=0.1):
