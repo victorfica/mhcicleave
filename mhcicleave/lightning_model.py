@@ -35,7 +35,7 @@ class CleavageLightningModule(pl.LightningModule):
         metrics = MetricCollection([AUROC(task="binary"), Accuracy(task="binary"), MatthewsCorrCoef(task="binary")])
 
         self.train_metrics = metrics.clone(prefix="train_")
-        self.valid_metrics = metrics.clone(prefix="valid_")
+        self.valid_metrics = metrics.clone(prefix="val_")
         self.test_metrics = metrics.clone(prefix="test_")
 
         # Define tracker over the collection to easy keep track of the metrics over multiple epochs
