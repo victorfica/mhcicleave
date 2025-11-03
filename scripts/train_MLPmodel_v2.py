@@ -13,8 +13,8 @@ from mhcicleave.lightning_model import CleavageLightningModule
 from mhcicleave.cleavagedatasets import PeptideEmbeddings
 
 # New API for setting TF32 precision (replaces the old function)
-torch.backends.cuda.matmul.fp32_precision = 'tf32'
-torch.backends.cudnn.conv.fp32_precision = 'tf32'
+#torch.backends.cuda.matmul.fp32_precision = 'tf32'
+#torch.backends.cudnn.conv.fp32_precision = 'tf32'
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -93,7 +93,8 @@ def run_train(args):
         accelerator="gpu" if torch.cuda.is_available() else "cpu",
         devices=1,
         callbacks=callbacks,
-        logger=csv_logger
+        logger=csv_logger,
+        precision="bf16-mixed"
     )
     # --- 5. Ejecutar Entrenamiento ---
     print("Iniciando entrenamiento...")
