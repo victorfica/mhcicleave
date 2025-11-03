@@ -80,14 +80,21 @@ class CleavageLightningModule(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         loss, labels, pred_labels = self._shared_steps(batch)
 
-        self.roc(pred_labels, labels)
-        self.conf(pred_labels, labels)
-
         self.valid_tracker.update(pred_labels, labels)
         self.log("val_loss", loss, on_step=False, on_epoch=True, prog_bar=True, logger=True)
 
         # self.logger.experiment.add_scalars('loss', {'valid': loss},self.global_step)
 
+        return loss
+
+    def test_step(self, batch, batch_idx):
+        loss, labels, pred_labels = self._shared_steps(batch)
+
+        self.roc(pred_labels, labels)
+        self.conf(pred_labels, labels)
+
+        self.valid_tracker.update(pred_labels, labels)
+        self.log("test_loss", loss, on_step=False, on_epoch=True, logger=True)
         return loss
 
     def on_train_epoch_start(self):
@@ -132,9 +139,3 @@ class CleavageLightningModule(pl.LightningModule):
         logits = self(batch[0])
         preds = torch.sigmoid(logits)
         return preds
-
-    def test_step(self, batch, batch_idx):
-        loss, labels, pred_labels = self._shared_steps(batch)
-        self.valid_tracker.update(pred_labels, labels)
-        self.log("test_loss", loss, on_step=False, on_epoch=True, logger=True)
-        return loss
