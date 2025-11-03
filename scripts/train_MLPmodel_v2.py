@@ -53,10 +53,10 @@ def run_train(args):
     input_size_mlp = seq_len * esm2_dim
     model_params_mlp = {
         "input_size": input_size_mlp,
-        "hidden_linear1": 256,
-        "hidden_linear2": 128,
+        "hidden_linear1": args.hidden_linear1,
+        "hidden_linear2": args.hidden_linear2,
         "out_neurons": 1,
-        "dropout": 0.5
+        "dropout": args.dropout,
     }
     mlp_network = MLP(**model_params_mlp)
 
@@ -139,6 +139,10 @@ if __name__ == '__main__':
 
     parser.add_argument("--learning_rate", type=float, default=0.0001, help="Learning rate for the optimizer.")
     parser.add_argument("--scheduler_step_size", type=int, default=5, help="Step size for the learning rate scheduler.")
+
+    parser.add_argument("--dropout", type=float, default=0.5, help="Dropout rate for the MLP model.")
+    parser.add_argument("--hidden_linear1", type=int, default=256, help="Number of neurons in the first hidden layer of the MLP model.")
+    parser.add_argument("--hidden_linear2", type=int, default=128, help="Number of neurons in the second hidden layer of the MLP model.")
 
     args = parser.parse_args()
     run_train(args)
