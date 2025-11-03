@@ -12,6 +12,9 @@ from mhcicleave.models import MLP
 from mhcicleave.lightning_model import CleavageLightningModule
 from mhcicleave.cleavagedatasets import PeptideEmbeddings
 
+# New API for setting TF32 precision (replaces the old function)
+torch.backends.cuda.matmul.fp32_precision = 'tf32'
+torch.backends.cudnn.conv.fp32_precision = 'tf32'
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -20,8 +23,7 @@ def run_train(args):
     """
     Main function to run the training pipeline based on command-line arguments.
     """
-    # 1. Setup Environment
-    torch.set_float32_matmul_precision('medium')
+    #torch.set_float32_matmul_precision('medium')
     device = torch.device(args.device if torch.cuda.is_available() else 'cpu')
 
     print("--- MHC-I Cleavage Model Training ---")
