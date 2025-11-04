@@ -1,6 +1,5 @@
 import torch
 import os
-import pandas as pd
 import lightning.pytorch as pl
 from lightning.pytorch.callbacks import ModelCheckpoint, EarlyStopping
 from lightning.pytorch.loggers import CSVLogger
@@ -12,6 +11,7 @@ from mhcicleave.models import MLP
 from mhcicleave.lightning_model import CleavageLightningModule
 from mhcicleave.cleavagedatasets import PeptideEmbeddings
 
+pl.seed_everything(42)
 # New API for setting TF32 precision (replaces the old function)
 #torch.backends.cuda.matmul.fp32_precision = 'tf32'
 #torch.backends.cudnn.conv.fp32_precision = 'tf32'
