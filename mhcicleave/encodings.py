@@ -184,9 +184,6 @@ class Embedder:
 
     def encode_esm(self, sequences, emb_type = 'concat', batch_size = 32, num_workers = 4, dataset_key='window'):
 
-        if emb_type not in ["avg", "concat"]:
-            print("Computing per-residue embedding by default. Other emb_type = 'avg' or 'concat'")
-
         pipe = pipeline('feature-extraction', model=self.model, tokenizer=self.tokenizer, framework='pt')
         key_dataset = KeyDataset(sequences, dataset_key)
 
@@ -194,12 +191,15 @@ class Embedder:
         for out in tqdm(pipe(key_dataset, batch_size=batch_size, return_tensors=True, num_workers=num_workers, shuffle=False),
                         total=len(sequences), desc='Generating Embeddings'):
             embeddings = out[:, 1:-1, :]
+            #print(embeddings.shape)
             if emb_type == 'concat':
                 emb = torch.flatten(embeddings, start_dim=1)
-            elif emb_type == 'avg':
+            elif emb_type == 'mean':
                 emb = torch.mean(embeddings, dim=1)
+            elif emb_type == 'residue':
+                emb = embeddings.squeeze(0)
             else:
-                emb = embeddings
+                raise ValueError(f"Unknown emb_type: {emb_type}")
             embeddings_list.append(emb)
         embeddings_result = torch.stack(embeddings_list)
         # del self.model
