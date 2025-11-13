@@ -70,47 +70,40 @@ class CNN(nn.Module):
         return out.squeeze()
 
 
-class CNNFeatureExtractor(nn.Module):
-    """
-    Extracts features from sequence embeddings using parallel 1D convolutions.
-    Each convolution has a different kernel size to capture motifs of varying lengths.
-    """
-
-    def __init__(self, in_channels: int, out_channels: int, kernel_sizes: list[int]):
+class CNNmultichannel(nn.Module):
+    def __init__(self, in_channels: int, out_channels: list[int], kernel_sizes: list[int]):
         super().__init__()
+        assert len(out_channels) == len(kernel_sizes), "out_channels and kernel_sizes must have the same length."
 
-        # Create a list of convolutional layers to be applied in parallel
         self.convs = nn.ModuleList()
-        for kernel_size in kernel_sizes:
+        for out_ch, k_size in zip(out_channels, kernel_sizes):
             self.convs.append(
                 nn.Sequential(
                     nn.Conv1d(
                         in_channels=in_channels,
-                        out_channels=out_channels,
-                        kernel_size=kernel_size,
-                        padding='same'  # 'same' padding ensures output length equals input length
+                        out_channels=out_ch,
+                        kernel_size=k_size,
+                        padding='same'
                     ),
-                    nn.BatchNorm1d(out_channels),
-                    nn.ReLU()
+                    nn.BatchNorm1d(out_ch),
+                    nn.ReLU(),
+                    nn.Dropout(0.2),
+                    nn.MaxPool1d(2),
                 )
             )
+        # Flatten layer for FC transition
+        self.flatten = nn.Flatten(start_dim=1)
 
-        # The output dimension will be the sum of channels from all parallel convolutions
-        self.output_dim = out_channels * len(kernel_sizes)
+        self.output_dim = 1120 # hard coded
+        self.dense = nn.Linear(self.output_dim, 1)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         # Input x shape: (batch_size, sequence_length, embedding_dim)
-        # PyTorch Conv1d expects (batch_size, channels, length)
         x = x.permute(0, 2, 1)
+        feature_flattened = [self.flatten(conv(x)) for conv in self.convs]
+        x_out = torch.cat(feature_flattened, dim=1)
+        x_out = F.sigmoid(self.dense(x_out))
+        return x_out.squeeze()
 
-        # Apply parallel convolutions and collect the outputs
-        feature_maps = [conv(x) for conv in self.convs]
 
-        # Concatenate the feature maps along the channel dimension
-        x_out = torch.cat(feature_maps, dim=1)
-        x_out = x_out.permute(0, 2, 1)  # Back to (batch_size, sequence_length, total_out_channels)
 
-        # global average pooling over the sequence dimension
-        x_out = x_out.mean(dim=1)
-
-        return x_out  # Shape: (batch_size, total_out_channels)
