@@ -231,7 +231,7 @@ if __name__ == '__main__':
     # --- Embedding Arguments ---
     parser.add_argument("--pretrain_model", type=str, default="facebook/esm2_t33_650M_UR50D",
                         help="Name of the Hugging Face pre-trained model (e.g., 'facebook/esm2_t33_650M_UR50D').")
-    parser.add_argument("--emb_type", type=str, default="concat", choices=["mean", "max", "concat"],
+    parser.add_argument("--emb_type", type=str, default="concat", choices=["mean","concat","residue"],
                         help="Type of embedding to use from the pre-trained model.")
     parser.add_argument("--batch_size_emb", type=int, default=64,
                         help="Batch size for embedding generation.")
