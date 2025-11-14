@@ -35,7 +35,7 @@ def run_train(args):
     train_loader = DataLoader(
         train_dataset,
         batch_size=args.batch_size,
-        shuffle=False,
+        shuffle=True,
         num_workers=args.num_workers
     )
     val_dataset = PeptideEmbeddings(h5_file=args.val_file)
