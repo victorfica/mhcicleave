@@ -102,7 +102,7 @@ class CNNmultichannel(nn.Module):
         x = x.permute(0, 2, 1)
         feature_flattened = [self.flatten(conv(x)) for conv in self.convs]
         x_out = torch.cat(feature_flattened, dim=1)
-        x_out = F.sigmoid(self.dense(x_out))
+        x_out = self.dense(x_out)
         return x_out.squeeze()
 
 
