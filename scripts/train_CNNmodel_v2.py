@@ -52,8 +52,8 @@ def run_train(args):
     esm2_dim = 1280
 
     model_params_cnn = {"in_channels": esm2_dim,
-                        "out_channels": [64,32,16],
-                        "kernel_sizes": [4,3,2],
+                        "out_channels": args.out_channels,
+                        "kernel_sizes": args.kernel_sizes,
                         "seq_len": seq_len}
     cnn_network = CNNmultichannel(**model_params_cnn)
 
