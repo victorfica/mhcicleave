@@ -52,8 +52,9 @@ def run_train(args):
     esm2_dim = 1280
 
     model_params_cnn = {"in_channels": esm2_dim,
-                        "out_channels": [128,64,32],
-                        "kernel_sizes": [4,3,2]}
+                        "out_channels": [64,32,16],
+                        "kernel_sizes": [4,3,2],
+                        "seq_len": seq_len}
     cnn_network = CNNmultichannel(**model_params_cnn)
 
     # Hiperparámetros para el LightningModule y optimizador
@@ -135,6 +136,9 @@ if __name__ == '__main__':
 
     parser.add_argument("--learning_rate", type=float, default=0.0001, help="Learning rate for the optimizer.")
     parser.add_argument("--scheduler_step_size", type=int, default=5, help="Step size for the learning rate scheduler.")
+
+    parser.add_argument("--out_channels", nargs='+', type=int, default=[64,32,16], help="List of output channels for each CNN layer.")
+    parser.add_argument("--kernel_sizes", nargs='+', type=int, default=[4,3,2], help="List of kernel sizes for each CNN layer.")
 
     # --- CNN Model Hyperparameters ---
     ## TODO: Add any CNN-specific hyperparameters if needed
