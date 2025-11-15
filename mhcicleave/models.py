@@ -71,7 +71,7 @@ class CNN(nn.Module):
 
 
 class CNNmultichannel(nn.Module):
-    def __init__(self, in_channels: int, out_channels: list[int], kernel_sizes: list[int]):
+    def __init__(self, in_channels: int, out_channels: list[int], kernel_sizes: list[int], seq_len: int):
         super().__init__()
         assert len(out_channels) == len(kernel_sizes), "out_channels and kernel_sizes must have the same length."
 
@@ -94,7 +94,7 @@ class CNNmultichannel(nn.Module):
         # Flatten layer for FC transition
         self.flatten = nn.Flatten(start_dim=1)
 
-        self.output_dim = 1120 # hard coded
+        self.output_dim = sum(out_channels) * (seq_len // 2)  # Adjusted for MaxPool1d with kernel_size=2
         self.dense = nn.Linear(self.output_dim, 1)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
